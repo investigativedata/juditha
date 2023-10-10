@@ -12,6 +12,8 @@ DEBUG = as_bool(get_env("DEBUG", 0))
 REDIS_URL = get_env("REDIS_URL", "redis://localhost:6379")
 REDIS_PREFIX = get_env("REDIS_PREFIX", "canonicaller")
 
+STORE_CONFIG = get_env("STORE_CONFIG")
+
 # Api documentation render
 TITLE = os.environ.get("TITLE", "Canonicaller")
 CONTACT = {

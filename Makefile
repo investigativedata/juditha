@@ -13,7 +13,7 @@ typecheck:
 	poetry run mypy --strict canonicaller
 
 test:
-	poetry run pytest tests/test.py -v --capture=sys --cov=canonicaller --cov-report term-missing
+	poetry run pytest -v --capture=sys --cov=canonicaller --cov-report term-missing
 
 build:
 	poetry run build

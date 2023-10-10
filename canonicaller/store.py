@@ -1,46 +1,41 @@
-import logging
 from functools import cache, lru_cache
 
-import fakeredis
-import redis
-from normality import normalize
+from ftmq.model.mixins import YamlMixin
+from pydantic import BaseModel
 
-from canonicaller import settings
+from canonicaller.cache import Cache, get_cache
+from canonicaller.settings import STORE_CONFIG
+from canonicaller.source import Source
 
-log = logging.getLogger(__name__)
 
+class Store(BaseModel, YamlMixin):
+    sources: list[Source] = []
+    cache: Cache | None = None
 
-class Store:
-    def __init__(self):
-        if settings.DEBUG:
-            con = fakeredis.FakeStrictRedis()
-            con.ping()
-            log.info("Redis connected: `fakeredis`")
-        else:
-            con = redis.from_url(settings.REDIS_URL)
-            con.ping()
-            log.info("Redis connected: `{settings.REDIS_URL}`")
-        self.cache = con
+    class Config:
+        arbitrary_types_allowed = True
 
-    def set(self, value: str) -> None:
-        self.cache.set(self.get_key(value), value)
+    def __init__(self, **data):
+        super().__init__(**data)
+        self.cache = get_cache()
 
-    def get(self, key: str) -> str | None:
-        value = self.cache.get(self.get_key(key))
-        if value is not None:
-            return value.decode().strip()
-
-    @staticmethod
-    def get_key(key: str) -> str:
-        return f"{settings.REDIS_PREFIX}:{normalize(key)}"
+    def lookup(self, value: str) -> str | None:
+        res = self.cache.get(value)
+        if res is not None:
+            return res
+        for source in self.sources:
+            res = source.lookup(value)
+            if res is not None:
+                return self.cache.set(value)
 
 
 @cache
-def get_store() -> Store:
-    return Store()
+def get_store(uri: str | None = None) -> Store:
+    uri = uri or STORE_CONFIG
+    return Store.from_path(uri)
 
 
 @lru_cache(100_000)
 def lookup(value: str) -> str | None:
     store = get_store()
-    return store.get(value)
+    return store.lookup(value)

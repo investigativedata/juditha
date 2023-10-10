@@ -1,8 +1,7 @@
 from fastapi import FastAPI, Response
 from fastapi.exceptions import HTTPException
 
-from canonicaller import __version__, settings
-from canonicaller.store import lookup
+from canonicaller import __version__, lookup, settings
 
 app = FastAPI(
     debug=settings.DEBUG,
