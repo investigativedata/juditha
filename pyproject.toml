@@ -25,7 +25,18 @@ isort = "^5.12.0"
 flake8 = "^6.1.0"
 pre-commit = "^3.4.0"
 bump2version = "^1.0.1"
+pytest = "^7.4.2"
+pytest-coverage = "^0.0"
+pytest-env = "^1.0.1"
+httpx = "^0.25.0"
+mypy = "^1.5.1"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.pytest.ini_options]
+env = [
+    "DEBUG=1",
+]

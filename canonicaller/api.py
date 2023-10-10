@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.exceptions import HTTPException
 
 from canonicaller import __version__, settings
@@ -19,7 +19,7 @@ async def api_lookup(q: str) -> str:
     value = lookup(q)
     if value is None:
         raise HTTPException(404)
-    return value
+    return Response(value)
 
 
 @app.head("/{q}")
