@@ -14,16 +14,16 @@ app = FastAPI(
 
 
 @app.get("/{q}")
-async def api_lookup(q: str) -> str:
-    value = lookup(q)
+async def api_lookup(q: str, fuzzy: bool | None = False) -> str:
+    value = lookup(q, fuzzy=fuzzy)
     if value is None:
         raise HTTPException(404)
     return Response(value)
 
 
 @app.head("/{q}")
-async def api_head(q: str) -> None:
-    value = lookup(q)
+async def api_head(q: str, fuzzy: bool | None = False) -> None:
+    value = lookup(q, fuzzy=fuzzy)
     if value is None:
         raise HTTPException(404)
     return 200

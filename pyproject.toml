@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "juditha"
-version = "0.0.1"
+version = "0.0.3"
 description = "A super-fast canonical name lookup service"
 authors = ["Simon Wörpel <simon@investigativedata.org>"]
 license = "GPL"
@@ -41,5 +41,6 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 env = [
     "DEBUG=1",
-    "STORE_CONFIG=tests/fixtures/store.yml"
+    "STORE_CONFIG=tests/fixtures/store.yml",
+    "FUZZY=true"
 ]

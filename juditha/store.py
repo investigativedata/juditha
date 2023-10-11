@@ -4,7 +4,7 @@ from ftmq.model.mixins import YamlMixin
 from pydantic import BaseModel
 
 from juditha.cache import Cache, get_cache
-from juditha.settings import JUDITHA_CONFIG
+from juditha.settings import FUZZY, JUDITHA, JUDITHA_CONFIG
 from juditha.source import Source
 
 
@@ -19,7 +19,7 @@ class Store(BaseModel, YamlMixin):
         super().__init__(**data)
         self.cache = get_cache()
 
-    def lookup(self, value: str) -> str | None:
+    def lookup(self, value: str, fuzzy: bool | None = FUZZY) -> str | None:
         res = self.cache.get(value)
         if res is not None:
             return res
@@ -27,17 +27,27 @@ class Store(BaseModel, YamlMixin):
             res = source.lookup(value)
             if res is not None:
                 return self.cache.set(value)
+        if fuzzy:
+            return self.cache.fuzzy(value)
+
+    def add(self, value: str, fuzzy: bool | None = FUZZY) -> None:
+        self.cache.set(value)
+        if fuzzy:
+            self.cache.index(value)
 
 
 @cache
-def get_store(uri: str | None = None) -> Store:
+def get_store(uri: str | None = None, juditha_url: str | None = None) -> Store:
     uri = uri or JUDITHA_CONFIG
     if uri:
         return Store.from_path(uri)
+    url = juditha_url or JUDITHA
+    if url:
+        return Store(sources=[Source(klass="juditha", config={"url": url})])
     return Store()
 
 
 @lru_cache(100_000)
-def lookup(value: str) -> str | None:
+def lookup(value: str, fuzzy: bool | None = FUZZY) -> str | None:
     store = get_store()
-    return store.lookup(value)
+    return store.lookup(value, fuzzy=fuzzy)
