@@ -1,3 +1,5 @@
+[![juditha on pypi](https://img.shields.io/pypi/v/juditha)](https://pypi.org/project/juditha/) [![Python test and package](https://github.com/investigativedata/juditha/actions/workflows/python.yml/badge.svg)](https://github.com/investigativedata/juditha/actions/workflows/python.yml) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit) [![Coverage Status](https://coveralls.io/repos/github/investigativedata/juditha/badge.svg?branch=main)](https://coveralls.io/github/investigativedata/juditha?branch=main) [![MIT License](https://img.shields.io/pypi/l/juditha)](./LICENSE)
+
 # juditha
 
 A super-fast lookup service for canonical names based on redis and configurable upstream sources (currently [Aleph](https://docs.aleph.occrp.org/) and [Wikipedia](https://www.wikipedia.org/)).
