@@ -1,31 +1,42 @@
+import logging
 from typing import Annotated
 
 import typer
-from followthemoney.types import registry
-from ftmq.io import smart_read, smart_read_proxies
 from rich import print
 
-from canonicaller.store import get_store, lookup
+from canonicaller import io
+from canonicaller.store import lookup
+
+logging.basicConfig(level=logging.INFO)
 
 cli = typer.Typer()
 
 
+def success(ix: int) -> None:
+    print(f"[green]Imported {ix} names")
+
+
 @cli.command("import")
 def cli_import(
-    in_uri: Annotated[str, typer.Option("-i", help="Input uri, default stdin")] = "-",
+    uri: Annotated[str, typer.Option("-i", help="Input uri, default stdin")] = "-",
     from_entities: Annotated[
         bool, typer.Option(help="Specify if import data is ftm data (json lines)")
     ] = False,
 ):
-    store = get_store()
-
     if from_entities:
-        for proxy in smart_read_proxies(in_uri):
-            for value in proxy.get_type_values(registry.name):
-                store.set(value)
+        success(io.load_proxies(uri))
     else:
-        for value in smart_read(in_uri, stream=True):
-            store.set(value)
+        success(io.load_names(uri))
+
+
+@cli.command()
+def load_dataset(uri: str) -> int:
+    success(io.load_dataset(uri))
+
+
+@cli.command()
+def load_catalog(uri: str) -> int:
+    success(io.load_catalog(uri))
 
 
 # @cli.callback(invoke_without_command=True)

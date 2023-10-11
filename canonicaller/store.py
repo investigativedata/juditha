@@ -32,7 +32,9 @@ class Store(BaseModel, YamlMixin):
 @cache
 def get_store(uri: str | None = None) -> Store:
     uri = uri or STORE_CONFIG
-    return Store.from_path(uri)
+    if uri:
+        return Store.from_path(uri)
+    return Store()
 
 
 @lru_cache(100_000)
