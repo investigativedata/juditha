@@ -41,5 +41,6 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 env = [
     "DEBUG=1",
-    "STORE_CONFIG=tests/fixtures/store.yml"
+    "STORE_CONFIG=tests/fixtures/store.yml",
+    "FUZZY=true"
 ]

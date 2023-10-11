@@ -108,6 +108,14 @@ Optionally, search fuzzy. Fuzzyness is controlled by `FUZZY_SCORE` as a threshol
 
 During import, this creates an additional reverted redis index based on value tokens and for lookups compares name candidates via `Levensthein`.
 
+Fuzzy matching is controlled via the api get parameter `fuzzy=true`
+
+    curl -I "http://localhost:8000/Brlin"
+    HTTP/1.1 404 Not Found
+
+    curl -I "http://localhost:8000/Brlin?fuzzy=true"
+    HTTP/1.1 200 OK
+
 ## the name
 
-**Juditha Dommer** was the daughter of a coppersmith and took care of seven children, while her husband Johann Pachelbel wrote a *canon*.
+**Juditha Dommer** was the daughter of a coppersmith and raised seven children, while her husband Johann Pachelbel wrote a *canon*.

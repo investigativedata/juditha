@@ -19,7 +19,7 @@ class Store(BaseModel, YamlMixin):
         super().__init__(**data)
         self.cache = get_cache()
 
-    def lookup(self, value: str) -> str | None:
+    def lookup(self, value: str, fuzzy: bool | None = FUZZY) -> str | None:
         res = self.cache.get(value)
         if res is not None:
             return res
@@ -27,12 +27,12 @@ class Store(BaseModel, YamlMixin):
             res = source.lookup(value)
             if res is not None:
                 return self.cache.set(value)
-        if FUZZY:
+        if fuzzy:
             return self.cache.fuzzy(value)
 
-    def add(self, value: str) -> None:
+    def add(self, value: str, fuzzy: bool | None = FUZZY) -> None:
         self.cache.set(value)
-        if FUZZY:
+        if fuzzy:
             self.cache.index(value)
 
 
@@ -48,6 +48,6 @@ def get_store(uri: str | None = None, juditha_url: str | None = None) -> Store:
 
 
 @lru_cache(100_000)
-def lookup(value: str) -> str | None:
+def lookup(value: str, fuzzy: bool | None = FUZZY) -> str | None:
     store = get_store()
-    return store.lookup(value)
+    return store.lookup(value, fuzzy=fuzzy)

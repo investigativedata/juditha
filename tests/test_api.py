@@ -19,3 +19,9 @@ def test_api(fixtures_path):
     assert res.status_code == 404
     res = client.get("/dshjka")
     assert res.status_code == 404
+
+    res = client.get("/European parlament")
+    assert res.status_code == 404
+
+    res = client.get("/European parlament?fuzzy=true")
+    assert res.status_code == 200
