@@ -9,5 +9,5 @@ class Juditha:
         return self.store.lookup(value)
 
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __all__ = ["lookup"]

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "juditha"
-version = "0.0.2"
+version = "0.0.3"
 description = "A super-fast canonical name lookup service"
 authors = ["Simon Wörpel <simon@investigativedata.org>"]
 license = "GPL"
