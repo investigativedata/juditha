@@ -13,6 +13,7 @@ REDIS_URL = get_env("REDIS_URL", "redis://localhost:6379")
 REDIS_PREFIX = get_env("REDIS_PREFIX", "juditha")
 
 JUDITHA_CONFIG = get_env("JUDITHA_CONFIG")
+JUDITHA = get_env("JUDITHA")
 
 # Api documentation render
 TITLE = os.environ.get("TITLE", "Juditha")

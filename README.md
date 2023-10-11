@@ -89,6 +89,19 @@ Store this as a file (e.g. `config.yml`) and use it via env vars:
 
 If a lookup is not found in redis, `juditha` would use the fallback sources in the given order to lookup names. The results are stored in redis for the next call.
 
+## use remote juditha
+
+The `juditha` client can use a remote api endpoint of a deployed `juditha`:
+
+    JUDITHA=https://juditha.ftm.store juditha lookup "HIMATIC EXPLOTACIONES SL"
+
+```python
+from juditha import Juditha
+
+j = Juditha("https://juditha.ftm.store")
+assert j.lookup("HIMATIC EXPLOTACIONES SL") is not None
+```
+
 ## the name
 
 **Juditha Dommer** was the daughter of a coppersmith and took care of seven children, while her husband Johann Pachelbel wrote a *canon*.
