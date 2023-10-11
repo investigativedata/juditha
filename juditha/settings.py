@@ -15,7 +15,7 @@ REDIS_PREFIX = get_env("REDIS_PREFIX", "juditha")
 JUDITHA_CONFIG = get_env("JUDITHA_CONFIG")
 
 # Api documentation render
-TITLE = os.environ.get("TITLE", "Canonicaller")
+TITLE = os.environ.get("TITLE", "Juditha")
 CONTACT = {
     "name": os.environ.get("CONTACT_AUTHOR", "Simon Wörpel"),
     "url": os.environ.get(
