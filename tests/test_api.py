@@ -1,9 +1,12 @@
 from fastapi.testclient import TestClient
 
 from juditha.api import app
+from juditha.io import load_proxies
 
 
-def test_api():
+def test_api(fixtures_path):
+    load_proxies(fixtures_path / "eu_authorities.ftm.json")
+
     client = TestClient(app)
 
     res = client.head("/European parliament")
