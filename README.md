@@ -4,7 +4,7 @@
 
 A super-fast lookup service for canonical names based on redis and configurable upstream sources (currently [Aleph](https://docs.aleph.occrp.org/) and [Wikipedia](https://www.wikipedia.org/)).
 
-`juditha` wants to solve the noise/garbage problem occurring when working with [Named Entity Recognition](https://en.wikipedia.org/wiki/Named-entity_recognition). Given the availability of huge lists of *known names*, once could canonize `ner`-results against this service to check if they are known.
+`juditha` wants to solve the noise/garbage problem occurring when working with [Named Entity Recognition](https://en.wikipedia.org/wiki/Named-entity_recognition). Given the availability of huge lists of *known names*, one could canonize `ner`-results against this service to check if they are known.
 
 The implementation uses a pre-populated redis cache which can fallback to other sources.
 

@@ -25,3 +25,7 @@ def test_api(fixtures_path):
 
     res = client.get("/European parlament?fuzzy=true")
     assert res.status_code == 200
+
+    res = client.get("/_classify/European parliament")
+    assert res.status_code == 200
+    assert res.content.decode() == "PublicBody"

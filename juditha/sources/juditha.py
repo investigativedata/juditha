@@ -14,8 +14,14 @@ if TYPE_CHECKING:
 class Juditha(BaseModel):
     url: HttpUrl
 
-    def lookup(self, value: str) -> str | None:
-        res = requests.get(f"{self.url}/{value}")
+    def lookup(self, name: str) -> str | None:
+        res = requests.get(f"{self.url}/{name}")
+        if res.ok:
+            return res.content.decode().strip()
+        return None
+
+    def classify(self, name: str) -> str | None:
+        res = requests.get(f"{self.url}/_classify/{name}")
         if res.ok:
             return res.content.decode().strip()
         return None

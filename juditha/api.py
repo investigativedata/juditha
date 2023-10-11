@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Response
 from fastapi.exceptions import HTTPException
 
-from juditha import __version__, lookup, settings
+from juditha import __version__, classify, lookup, settings
 
 app = FastAPI(
     debug=settings.DEBUG,
@@ -13,17 +13,25 @@ app = FastAPI(
 )
 
 
+@app.get("/_classify/{q}")
+async def api_classify(q: str) -> str:
+    schema = classify(q)
+    if schema is None:
+        return Response("404", status_code=404)
+    return Response(schema)
+
+
 @app.get("/{q}")
 async def api_lookup(q: str, fuzzy: bool | None = False) -> str:
-    value = lookup(q, fuzzy=fuzzy)
-    if value is None:
+    name = lookup(q, fuzzy=fuzzy)
+    if name is None:
         return Response("404", status_code=404)
-    return Response(value)
+    return Response(name)
 
 
 @app.head("/{q}")
 async def api_head(q: str, fuzzy: bool | None = False) -> None:
-    value = lookup(q, fuzzy=fuzzy)
-    if value is None:
+    name = lookup(q, fuzzy=fuzzy)
+    if name is None:
         raise HTTPException(404)
     return 200

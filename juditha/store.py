@@ -1,11 +1,14 @@
 from functools import cache, lru_cache
 
 from ftmq.model.mixins import YamlMixin
+from ftmq.types import CE
 from pydantic import BaseModel
 
-from juditha.cache import Cache, get_cache
+from juditha.cache import Cache, Prefix, get_cache
+from juditha.classify import Schema
 from juditha.settings import FUZZY, JUDITHA, JUDITHA_CONFIG
 from juditha.source import Source
+from juditha.util import canonized_names
 
 
 class Store(BaseModel, YamlMixin):
@@ -30,10 +33,20 @@ class Store(BaseModel, YamlMixin):
         if fuzzy:
             return self.cache.fuzzy(value)
 
+    def classify(self, name: str) -> str | None:
+        schemata = self.cache.smembers(name, Prefix.SCHEMA)
+        return Schema.resolve(schemata)
+
     def add(self, value: str, fuzzy: bool | None = FUZZY) -> None:
         self.cache.set(value)
         if fuzzy:
             self.cache.index(value)
+
+    def add_proxy(self, proxy: CE, fuzzy: bool | None = FUZZY) -> None:
+        for name in canonized_names(proxy):
+            self.add(name, fuzzy=fuzzy)
+        for name, schema in Schema.from_proxy(proxy):
+            self.cache.add_schema(name, schema)
 
 
 @cache
@@ -51,3 +64,9 @@ def get_store(uri: str | None = None, juditha_url: str | None = None) -> Store:
 def lookup(value: str, fuzzy: bool | None = FUZZY) -> str | None:
     store = get_store()
     return store.lookup(value, fuzzy=fuzzy)
+
+
+@lru_cache(100_000)
+def classify(value: str) -> str | None:
+    store = get_store()
+    return store.classify(value)

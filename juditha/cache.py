@@ -1,4 +1,5 @@
 import logging
+from enum import StrEnum
 from functools import cache
 from typing import Set
 
@@ -12,6 +13,11 @@ from juditha.index import find_best, tokenize
 from juditha.util import canonize
 
 log = logging.getLogger(__name__)
+
+
+class Prefix(StrEnum):
+    SCHEMA = "SCHEMA"
+    TOKEN = "TOKEN"
 
 
 class Cache:
@@ -43,13 +49,18 @@ class Cache:
         if not value:
             return 0
         # store fingerprint
-        self.cache.set(self.get_key(fp(value)), value)
+        fp_value = fp(value)
+        if fp_value:
+            self.cache.set(self.get_key(fp_value), value)
         # store inverted tokens
-        tokens = tokenize(value)
         ix = 1
-        for token in tokens:
-            ix += self.cache.sadd(self.get_key(token) + "#SET", value)
+        for token in tokenize(value):
+            ix += self.sadd(token, Prefix.TOKEN, value)
         return ix
+
+    def add_schema(self, value: str, schema: str) -> None:
+        value = canonize(value)
+        self.sadd(value, Prefix.SCHEMA, schema)
 
     def fuzzy(
         self, value: str, threshold: int | None = settings.FUZZY_SCORE
@@ -59,14 +70,20 @@ class Cache:
         if res is not None:
             return res
         for token in tokenize(value):
-            match = find_best(value, self.smembers(token), threshold=threshold)
+            match = find_best(
+                value, self.smembers(token, Prefix.TOKEN), threshold=threshold
+            )
             if match:
                 return match
 
-    def smembers(self, key: str) -> Set[str]:
-        key = self.get_key(key) + "#SET"
+    def smembers(self, key: str, prefix: str) -> Set[str]:
+        key = f"{self.get_key(key)}:{prefix}"
         res: Set[bytes] = self.cache.smembers(key)
         return {v.decode() for v in res}
+
+    def sadd(self, key: str, prefix: str, *values: str) -> int:
+        key = f"{self.get_key(key)}:{prefix}"
+        return self.cache.sadd(key, *values)
 
     @staticmethod
     def get_key(key: str) -> str:

@@ -12,10 +12,14 @@ from juditha.util import canonize
 
 
 def tokenize(value: str) -> set[str]:
+    tokens = set()
+    value = canonize(value)
+    if value:
+        tokens.update({t for t in value.split() if len(t) > 3})
     value = fp(value)
     if value:
-        return {t for t in value.split() if len(t) > 3}
-    return set()
+        tokens.update({t for t in value.split() if len(t) > 3})
+    return tokens
 
 
 def compare(value1: str, value2: str) -> int:
