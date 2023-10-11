@@ -1,4 +1,4 @@
-from canonicaller import io, lookup
+from juditha import io, lookup
 
 
 def test_io(fixtures_path):

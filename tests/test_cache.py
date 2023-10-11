@@ -1,5 +1,5 @@
-from canonicaller.cache import Cache
-from canonicaller.util import names
+from juditha.cache import Cache
+from juditha.util import names
 
 
 def test_cache(eu_authorities):

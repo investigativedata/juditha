@@ -10,7 +10,7 @@ def get_env(env: str, default: Any | None = None) -> Any | None:
 
 DEBUG = as_bool(get_env("DEBUG", 0))
 REDIS_URL = get_env("REDIS_URL", "redis://localhost:6379")
-REDIS_PREFIX = get_env("REDIS_PREFIX", "canonicaller")
+REDIS_PREFIX = get_env("REDIS_PREFIX", "juditha")
 
 STORE_CONFIG = get_env("STORE_CONFIG")
 
@@ -19,7 +19,7 @@ TITLE = os.environ.get("TITLE", "Canonicaller")
 CONTACT = {
     "name": os.environ.get("CONTACT_AUTHOR", "Simon Wörpel"),
     "url": os.environ.get(
-        "CONTACT_URL", "https://github.com/investigativedata/canonicaller/"
+        "CONTACT_URL", "https://github.com/investigativedata/juditha/"
     ),
     "email": os.environ.get("CONTACT_EMAIL", "simon@investigativedata.org"),
 }

@@ -1,4 +1,4 @@
-from canonicaller.sources import Aleph
+from juditha.sources import Aleph
 
 
 def test_aleph(fixtures_path):

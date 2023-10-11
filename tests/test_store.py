@@ -1,4 +1,4 @@
-from canonicaller.store import get_store
+from juditha.store import get_store
 
 
 def test_store(fixtures_path):

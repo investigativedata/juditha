@@ -2,18 +2,18 @@ install:
 	poetry install --with dev
 
 lint:
-	poetry run flake8 canonicaller --count --select=E9,F63,F7,F82 --show-source --statistics
-	poetry run flake8 canonicaller --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+	poetry run flake8 juditha --count --select=E9,F63,F7,F82 --show-source --statistics
+	poetry run flake8 juditha --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
 pre-commit:
 	poetry run pre-commit install
 	poetry run pre-commit run -a
 
 typecheck:
-	poetry run mypy --strict canonicaller
+	poetry run mypy --strict juditha
 
 test:
-	poetry run pytest -v --capture=sys --cov=canonicaller --cov-report term-missing
+	poetry run pytest -v --capture=sys --cov=juditha --cov-report term-missing
 
 build:
 	poetry run build

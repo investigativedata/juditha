@@ -3,9 +3,9 @@ from functools import cache, lru_cache
 from ftmq.model.mixins import YamlMixin
 from pydantic import BaseModel
 
-from canonicaller.cache import Cache, get_cache
-from canonicaller.settings import STORE_CONFIG
-from canonicaller.source import Source
+from juditha.cache import Cache, get_cache
+from juditha.settings import STORE_CONFIG
+from juditha.source import Source
 
 
 class Store(BaseModel, YamlMixin):

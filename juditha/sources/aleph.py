@@ -4,10 +4,10 @@ from alephclient.api import AlephAPI
 from ftmq.util import make_proxy
 from pydantic import BaseModel
 
-from canonicaller.util import test_proxy
+from juditha.util import test_proxy
 
 if TYPE_CHECKING:
-    from canonicaller.source import Source
+    from juditha.source import Source
 
 
 class Aleph(BaseModel):

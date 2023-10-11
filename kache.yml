@@ -3,7 +3,7 @@ listeners:
     addr: :80
 
 upstreams:
-  - name: canonicaller
+  - name: juditha
     addr: "http://api:8000"
 
 logging:

@@ -5,7 +5,7 @@ import fakeredis
 import redis
 from normality import normalize
 
-from canonicaller import settings
+from juditha import settings
 
 log = logging.getLogger(__name__)
 

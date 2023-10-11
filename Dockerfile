@@ -1,6 +1,6 @@
 FROM ghcr.io/investigativedata/ftm-docker:latest
 
-COPY canonicaller /app/canonicaller
+COPY juditha /app/juditha
 COPY setup.py /app/setup.py
 COPY setup.cfg /app/setup.cfg
 COPY pyproject.toml /app/pyproject.toml
@@ -13,4 +13,4 @@ RUN pip install .
 
 USER 1000
 
-ENTRYPOINT ["gunicorn", "canonicaller.api:app", "--bind", "0.0.0.0:8000", "--worker-class", "uvicorn.workers.UvicornWorker"]
+ENTRYPOINT ["gunicorn", "juditha.api:app", "--bind", "0.0.0.0:8000", "--worker-class", "uvicorn.workers.UvicornWorker"]

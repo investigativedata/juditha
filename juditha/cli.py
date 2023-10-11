@@ -4,8 +4,8 @@ from typing import Annotated
 import typer
 from rich import print
 
-from canonicaller import io
-from canonicaller.store import lookup
+from juditha import io
+from juditha.store import lookup
 
 logging.basicConfig(level=logging.INFO)
 

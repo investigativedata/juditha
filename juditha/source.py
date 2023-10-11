@@ -2,8 +2,8 @@ from typing import Any, Literal, TypeAlias
 
 from pydantic import BaseModel
 
-from canonicaller.sources.aleph import Aleph
-from canonicaller.sources.wikipedia import Wikipedia
+from juditha.sources.aleph import Aleph
+from juditha.sources.wikipedia import Wikipedia
 
 Stores = {
     "aleph": Aleph,

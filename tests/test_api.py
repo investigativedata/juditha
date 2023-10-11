@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from canonicaller.api import app
+from juditha.api import app
 
 
 def test_api():

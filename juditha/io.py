@@ -4,8 +4,8 @@ from ftmq.io import smart_read, smart_read_proxies
 from ftmq.model.dataset import Catalog, Dataset
 from pantomime.types import FTM
 
-from canonicaller.cache import get_cache
-from canonicaller.util import names
+from juditha.cache import get_cache
+from juditha.util import names
 
 log = logging.getLogger(__name__)
 

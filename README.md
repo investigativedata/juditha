@@ -1,28 +1,28 @@
-# canonicaller
+# juditha
 
 A super-fast lookup service for canonical names based on redis.
 
 ## populate
 
-    echo "Jane Doe\nAlice" | canonicaller import
+    echo "Jane Doe\nAlice" | juditha import
 
 ### from ftm entities
 
-    cat entities.ftm.json | canonicaller import --from-entities
+    cat entities.ftm.json | juditha import --from-entities
 
 ### from anywhere
 
-    canonicaller import -i s3://my_bucket/names.txt
-    canonicaller import -i https://data.ftm.store/eu_authorities/entities.ftm.json --from-entities
+    juditha import -i s3://my_bucket/names.txt
+    juditha import -i https://data.ftm.store/eu_authorities/entities.ftm.json --from-entities
 
 ## lookup
 
-    canonicaller lookup jane
+    juditha lookup jane
 
 ## in python applications
 
 ```python
-from canonicaller import lookup
+from juditha import lookup
 
 assert lookup("jane") == "Jane"
 assert lookup("foo") is None
@@ -30,7 +30,7 @@ assert lookup("foo") is None
 
 ## run as api
 
-    uvicorn --port 8000 canonicaller.api:app --workers 8
+    uvicorn --port 8000 juditha.api:app --workers 8
 
 ## settings
 

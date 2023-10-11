@@ -1,4 +1,4 @@
-from canonicaller.sources import Wikipedia
+from juditha.sources import Wikipedia
 
 
 def test_wikipedia():

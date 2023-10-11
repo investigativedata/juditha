@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING
 import requests
 from pydantic import BaseModel, HttpUrl
 
-from canonicaller.util import canonize
+from juditha.util import canonize
 
 if TYPE_CHECKING:
-    from canonicaller.source import Source
+    from juditha.source import Source
 
 
 class Wikipedia(BaseModel):
