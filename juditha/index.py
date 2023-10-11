@@ -13,7 +13,9 @@ from juditha.util import canonize
 
 def tokenize(value: str) -> set[str]:
     value = fp(value)
-    return {t for t in value.split() if len(t) > 3}
+    if value:
+        return {t for t in value.split() if len(t) > 3}
+    return set()
 
 
 def compare(value1: str, value2: str) -> int:
