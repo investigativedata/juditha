@@ -91,4 +91,4 @@ If a lookup is not found in redis, `juditha` would use the fallback sources in t
 
 ## the name
 
-**Juditha** is Johann Pachelbels, who wrote a *canon*, second wifes name.
+**Juditha Dommer** was the daughter of a coppersmith and took care of seven children, while her husband Johann Pachelbel wrote a *canon*.
