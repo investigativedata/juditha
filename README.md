@@ -102,6 +102,12 @@ j = Juditha("https://juditha.ftm.store")
 assert j.lookup("HIMATIC EXPLOTACIONES SL") is not None
 ```
 
+## fuzzy matching
+
+Optionally, search fuzzy. Fuzzyness is controlled by `FUZZY_SCORE` as a threshold (~0.9x) and activated by `FUZZY=true`.
+
+During import, this creates an additional reverted redis index based on value tokens and for lookups compares name candidates via `Levensthein`.
+
 ## the name
 
 **Juditha Dommer** was the daughter of a coppersmith and took care of seven children, while her husband Johann Pachelbel wrote a *canon*.

@@ -14,6 +14,8 @@ REDIS_PREFIX = get_env("REDIS_PREFIX", "juditha")
 
 JUDITHA_CONFIG = get_env("JUDITHA_CONFIG")
 JUDITHA = get_env("JUDITHA")
+FUZZY = as_bool(get_env("FUZZY", 0))
+FUZZY_SCORE = float(get_env("FUZZY_SCORE", 0.94))
 
 # Api documentation render
 TITLE = os.environ.get("TITLE", "Juditha")

@@ -4,7 +4,7 @@ from ftmq.model.mixins import YamlMixin
 from pydantic import BaseModel
 
 from juditha.cache import Cache, get_cache
-from juditha.settings import JUDITHA, JUDITHA_CONFIG
+from juditha.settings import FUZZY, JUDITHA, JUDITHA_CONFIG
 from juditha.source import Source
 
 
@@ -27,6 +27,13 @@ class Store(BaseModel, YamlMixin):
             res = source.lookup(value)
             if res is not None:
                 return self.cache.set(value)
+        if FUZZY:
+            return self.cache.fuzzy(value)
+
+    def add(self, value: str) -> None:
+        self.cache.set(value)
+        if FUZZY:
+            self.cache.index(value)
 
 
 @cache

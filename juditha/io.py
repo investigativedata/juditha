@@ -4,21 +4,21 @@ from ftmq.io import smart_read, smart_read_proxies
 from ftmq.model.dataset import Catalog, Dataset
 from pantomime.types import FTM
 
-from juditha.cache import get_cache
+from juditha.store import get_store
 from juditha.util import names
 
 log = logging.getLogger(__name__)
 
 
 def _load_dataset(dataset: Dataset) -> int:
-    cache = get_cache()
+    store = get_store()
     ix = 0
     names_seen = False
     for resource in dataset.resources:
         if resource.name == "names.txt":
             names_seen = True
             for name in smart_read(resource.url, stream=True):
-                cache.set(name)
+                store.add(name)
                 ix += 1
                 if ix % 10_000 == 0:
                     log.info(f"[{dataset.name}] Loading name %d ..." % ix)
@@ -28,7 +28,7 @@ def _load_dataset(dataset: Dataset) -> int:
             if resource.mime_type == FTM:
                 for proxy in smart_read_proxies(resource.url):
                     for name in names(proxy):
-                        cache.set(name)
+                        store.add(name)
                         ix += 1
                         if ix % 10_000 == 0:
                             log.info(f"[{dataset.name}] Loading name %d ..." % ix)
@@ -51,20 +51,20 @@ def load_catalog(uri: str) -> int:
 
 
 def load_names(uri: str) -> int:
-    cache = get_cache()
+    store = get_store()
     for ix, name in enumerate(smart_read(uri, stream=True), 1):
-        cache.set(name)
+        store.add(name)
         if ix % 10_000 == 0:
             log.info("Loading name %d ..." % ix)
     return ix
 
 
 def load_proxies(uri: str) -> int:
-    cache = get_cache()
+    store = get_store()
     ix = 0
     for proxy in smart_read_proxies(uri):
         for name in names(proxy):
-            cache.set(name)
+            store.add(name)
             ix += 1
             if ix % 10_000 == 0:
                 log.info("Loading name %d ..." % ix)

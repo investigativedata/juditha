@@ -1,11 +1,15 @@
 import logging
 from functools import cache
+from typing import Set
 
 import fakeredis
 import redis
+from fingerprints import generate as fp
 from normality import normalize
 
 from juditha import settings
+from juditha.index import find_best, tokenize
+from juditha.util import canonize
 
 log = logging.getLogger(__name__)
 
@@ -23,7 +27,7 @@ class Cache:
         self.cache = con
 
     def set(self, value: str) -> str:
-        value = value.lower()
+        value = canonize(value)
         self.cache.set(self.get_key(value), value)
         return value
 
@@ -31,6 +35,34 @@ class Cache:
         value = self.cache.get(self.get_key(key))
         if value is not None:
             return value.decode().strip()
+
+    def index(self, value: str) -> int:
+        value = canonize(value)
+        # store fingerprint
+        self.cache.set(self.get_key(fp(value)), value)
+        # store inverted tokens
+        tokens = tokenize(value)
+        ix = 1
+        for token in tokens:
+            ix += self.cache.sadd(self.get_key(token) + "#SET", value)
+        return ix
+
+    def fuzzy(
+        self, value: str, threshold: int | None = settings.FUZZY_SCORE
+    ) -> str | None:
+        value = canonize(value)
+        res = self.get(fp(value))
+        if res is not None:
+            return res
+        for token in tokenize(value):
+            match = find_best(value, self.smembers(token), threshold=threshold)
+            if match:
+                return match
+
+    def smembers(self, key: str) -> Set[str]:
+        key = self.get_key(key) + "#SET"
+        res: Set[bytes] = self.cache.smembers(key)
+        return {v.decode() for v in res}
 
     @staticmethod
     def get_key(key: str) -> str:
