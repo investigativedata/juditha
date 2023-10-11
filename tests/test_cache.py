@@ -10,3 +10,6 @@ def test_cache(eu_authorities):
 
     assert cache.get("european parliament") == cache.get("European Parliament")
     assert cache.get("foo") is None
+
+    cache.set("-")
+    assert cache.get("-") is None

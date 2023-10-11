@@ -17,7 +17,7 @@ app = FastAPI(
 async def api_lookup(q: str, fuzzy: bool | None = False) -> str:
     value = lookup(q, fuzzy=fuzzy)
     if value is None:
-        raise HTTPException(404)
+        return Response(status_code=404)
     return Response(value)
 
 

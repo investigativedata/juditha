@@ -26,8 +26,10 @@ class Cache:
             log.info(f"Redis connected: `{settings.REDIS_URL}`")
         self.cache = con
 
-    def set(self, value: str) -> str:
+    def set(self, value: str) -> str | None:
         value = canonize(value)
+        if not value:
+            return
         self.cache.set(self.get_key(value), value)
         return value
 
@@ -38,6 +40,8 @@ class Cache:
 
     def index(self, value: str) -> int:
         value = canonize(value)
+        if not value:
+            return 0
         # store fingerprint
         self.cache.set(self.get_key(fp(value)), value)
         # store inverted tokens
