@@ -4,7 +4,7 @@ from ftmq.model.mixins import YamlMixin
 from pydantic import BaseModel
 
 from juditha.cache import Cache, get_cache
-from juditha.settings import STORE_CONFIG
+from juditha.settings import JUDITHA_CONFIG
 from juditha.source import Source
 
 
@@ -31,7 +31,7 @@ class Store(BaseModel, YamlMixin):
 
 @cache
 def get_store(uri: str | None = None) -> Store:
-    uri = uri or STORE_CONFIG
+    uri = uri or JUDITHA_CONFIG
     if uri:
         return Store.from_path(uri)
     return Store()
