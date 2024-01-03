@@ -23,10 +23,11 @@ CONTACT = {
     "url": os.environ.get(
         "CONTACT_URL", "https://github.com/investigativedata/juditha/"
     ),
-    "email": os.environ.get("CONTACT_EMAIL", "simon@investigativedata.org"),
+    "email": os.environ.get("CONTACT_EMAIL", "hi@investigativedata.org"),
 }
 DESCRIPTION = """
-Super fast canonical name lookup. Just do head requests:
+Super fast canonical name lookup. Just do head requests to check if a name is
+known:
 
     curl -I "http://localhost:8000/Berlin"
     HTTP/1.1 200 OK

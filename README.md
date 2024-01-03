@@ -2,33 +2,39 @@
 
 # juditha
 
-A super-fast lookup service for canonical names based on redis and configurable upstream sources (currently [Aleph](https://docs.aleph.occrp.org/) and [Wikipedia](https://www.wikipedia.org/)).
+A super-fast lookup service for canonical names based on redis and configurable fallback upstream sources (currently [Aleph](https://docs.aleph.occrp.org/) and [Wikipedia](https://www.wikipedia.org/)).
 
-`juditha` wants to solve the noise/garbage problem occurring when working with [Named Entity Recognition](https://en.wikipedia.org/wiki/Named-entity_recognition). Given the availability of huge lists of *known names*, one could canonize `ner`-results against this service to check if they are known.
+`juditha` wants to solve the noise/garbage problem occurring when working with [Named Entity Recognition](https://en.wikipedia.org/wiki/Named-entity_recognition). Given the availability of huge lists of *known names*, such as company registries or lists of persons of interest, one could canonize `ner`-results against this service to check if they are known.
 
 The implementation uses a pre-populated redis cache which can fallback to other sources.
 
+## quickstart
+
     pip install juditha
 
-## populate
+### start local redis
 
-    echo "Jane Doe\nAlice" | juditha import
+    docker run -p 6379:6379  redis
 
-## lookup
+### populate
 
-    juditha lookup Jane
-    "jane"
+    echo "Jane Doe\nAlice" | juditha load
+
+### lookup
+
+    juditha lookup "jane doe"
+    "Jane Doe"
 
 ## data import
 
 ### from ftm entities
 
-    cat entities.ftm.json | juditha import --from-entities
+    cat entities.ftm.json | juditha load --from-entities
 
 ### from anywhere
 
-    juditha import -i s3://my_bucket/names.txt
-    juditha import -i https://data.ftm.store/eu_authorities/entities.ftm.json --from-entities
+    juditha load -i s3://my_bucket/names.txt
+    juditha load -i https://data.ftm.store/eu_authorities/entities.ftm.json --from-entities
 
 ### a complete dataset or catalog
 
@@ -42,7 +48,7 @@ Following the [`nomenklatura`](https://github.com/opensanctions/nomenklatura) sp
 ```python
 from juditha import lookup
 
-assert lookup("jane") == "Jane"
+assert lookup("jane doe") == "Jane Doe"
 assert lookup("foo") is None
 ```
 
@@ -52,11 +58,19 @@ assert lookup("foo") is None
 
 ### api calls
 
-    curl -I "http://localhost:8000/Berlin"
+Just do head requests to check if a name is known:
+
+    curl -I "http://localhost:8000/Alice"
     HTTP/1.1 200 OK
 
-    curl -I "http://localhost:8000/Bayern"
+    curl -I "http://localhost:8000/John"
     HTTP/1.1 404 Not Found
+
+Do an actual request to get the canonized name:
+
+    curl "http://localhost:8000/alice"
+    Alice
+
 
 ## settings
 
@@ -101,20 +115,6 @@ from juditha import Juditha
 j = Juditha("https://juditha.ftm.store")
 assert j.lookup("HIMATIC EXPLOTACIONES SL") is not None
 ```
-
-## fuzzy matching
-
-Optionally, search fuzzy. Fuzzyness is controlled by `FUZZY_SCORE` as a threshold (~0.9x) and activated by `FUZZY=true`.
-
-During import, this creates an additional reverted redis index based on value tokens and for lookups compares name candidates via `Levensthein`.
-
-Fuzzy matching is controlled via the api get parameter `fuzzy=true`
-
-    curl -I "http://localhost:8000/Brlin"
-    HTTP/1.1 404 Not Found
-
-    curl -I "http://localhost:8000/Brlin?fuzzy=true"
-    HTTP/1.1 200 OK
 
 ## the name
 
