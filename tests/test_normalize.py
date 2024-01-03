@@ -26,7 +26,7 @@ def test_normalize():
     assert normalize("123") is None
 
     # ascii
-    assert normalize("é") == "e"
+    assert normalize("éé") == "e"
     assert normalize("عبد الحميد دشتي") == "alhmydbdshty"
     assert normalize("ヴラジーミル・プーチン") == "puchinvurajimiru"
 
