@@ -43,5 +43,7 @@ def normalize(value: Any) -> str | None:
     return value or None
 
 
-def clean_value(value: str) -> str:
+def clean_value(value: str | bytes) -> str:
+    if isinstance(value, bytes):
+        value = value.decode()
     return " ".join(value.split()).strip()
