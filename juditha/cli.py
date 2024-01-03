@@ -45,7 +45,7 @@ def load_dataset(
     with_schema: Annotated[
         bool, typer.Option(..., help="Include schemata for classifier")
     ] = False,
-) -> int:
+):
     try:
         res = io.load_dataset(uri, with_schema=with_schema)
         success(f"Imported {res} names.")
@@ -59,7 +59,7 @@ def load_catalog(
     with_schema: Annotated[
         bool, typer.Option(..., help="Include schemata for classifier")
     ] = False,
-) -> int:
+):
     try:
         res = io.load_catalog(uri, with_schema=with_schema)
         success(f"Imported {res} names.")
@@ -68,9 +68,14 @@ def load_catalog(
 
 
 @cli.command("lookup")
-def cli_lookup(value: str):
+def cli_lookup(
+    value: str,
+    threshold: Annotated[
+        float, typer.Option(..., help="Fuzzy threshold")
+    ] = settings.FUZZY_THRESHOLD,
+):
     try:
-        result = lookup(value)
+        result = lookup(value, threshold=threshold)
         if result is not None:
             print(result)
         else:

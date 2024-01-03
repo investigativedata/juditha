@@ -14,7 +14,7 @@ app = FastAPI(
 
 
 @app.get("/_classify/{q}")
-async def api_classify(q: str) -> str:
+async def api_classify(q: str) -> Response:
     schema = classify(q)
     if schema is None:
         return Response("404", status_code=404)
@@ -22,7 +22,9 @@ async def api_classify(q: str) -> str:
 
 
 @app.get("/{q}")
-async def api_lookup(q: str, threshold: float | None = settings.FUZZY_THRESHOLD) -> str:
+async def api_lookup(
+    q: str, threshold: float | None = settings.FUZZY_THRESHOLD
+) -> Response:
     name = lookup(q, threshold=threshold)
     if name is None:
         return Response("404", status_code=404)
@@ -30,7 +32,7 @@ async def api_lookup(q: str, threshold: float | None = settings.FUZZY_THRESHOLD)
 
 
 @app.head("/{q}")
-async def api_head(q: str, threshold: float | None = settings.FUZZY_THRESHOLD) -> None:
+async def api_head(q: str, threshold: float | None = settings.FUZZY_THRESHOLD) -> int:
     name = lookup(q, threshold=threshold)
     if name is None:
         raise HTTPException(404)

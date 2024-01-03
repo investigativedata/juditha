@@ -25,6 +25,11 @@ The implementation uses a pre-populated redis cache which can fallback to other 
     juditha lookup "jane doe"
     "Jane Doe"
 
+To match more fuzzy, reduce the threshold (default 0.97):
+
+    juditha lookup "doe, jane" --threshold 0.5
+    "Jane Doe"
+
 ## data import
 
 ### from ftm entities
@@ -49,7 +54,8 @@ Following the [`nomenklatura`](https://github.com/opensanctions/nomenklatura) sp
 from juditha import lookup
 
 assert lookup("jane doe") == "Jane Doe"
-assert lookup("foo") is None
+assert lookup("doe, jane") is None
+assert lookup("doe, jane", threshold=0.5) == "Jane Doe"
 ```
 
 ## run as api
@@ -60,16 +66,16 @@ assert lookup("foo") is None
 
 Just do head requests to check if a name is known:
 
-    curl -I "http://localhost:8000/Alice"
+    curl -I "http://localhost:8000/jane%20doe"
     HTTP/1.1 200 OK
 
     curl -I "http://localhost:8000/John"
     HTTP/1.1 404 Not Found
 
-Do an actual request to get the canonized name:
+An actual request returns the canonized name:
 
-    curl "http://localhost:8000/alice"
-    Alice
+    curl "http://localhost:8000/doe,%20jane?threshold=0.5"
+    Jane Doe
 
 
 ## settings
