@@ -1,2 +1,2 @@
 datasets:
-  uri: https://data.ftm.store/gdho/index.json
+  - uri: https://data.ftm.store/eu_authorities/index.json

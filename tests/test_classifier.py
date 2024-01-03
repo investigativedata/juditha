@@ -22,6 +22,6 @@ def test_classifier(eu_authorities):
 
     store = get_store()
     for proxy in eu_authorities:
-        store.add_proxy(proxy)
+        store.index_proxy(proxy, with_schema=True)
 
     assert store.classify(proxy.caption) == proxy.schema.name

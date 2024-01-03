@@ -5,19 +5,19 @@ from typing import Set
 
 import fakeredis
 import redis
-from fingerprints import generate as fp
-from normality import normalize
+from thefuzz import fuzz
 
 from juditha import settings
-from juditha.index import find_best, tokenize
-from juditha.util import canonize
+from juditha.clean import clean_value, normalize
+from juditha.util import find_best
 
 log = logging.getLogger(__name__)
 
 
 class Prefix(StrEnum):
     SCHEMA = "SCHEMA"
-    TOKEN = "TOKEN"
+    NORM = "NORM"
+    FUZZY = "FUZZY"
 
 
 class Cache:
@@ -32,62 +32,89 @@ class Cache:
             log.info(f"Redis connected: `{settings.REDIS_URL}`")
         self.cache = con
 
-    def set(self, value: str) -> str | None:
-        value = canonize(value)
-        if not value:
-            return
-        self.cache.set(self.get_key(value), value)
-        return value
+    def set(self, key: str, value: str, prefix: str | None = None) -> None:
+        self.cache.set(self.get_key(key, prefix), clean_value(value))
 
-    def get(self, key: str) -> str | None:
-        value = self.cache.get(self.get_key(key))
+    def set_name(self, value: str) -> None:
+        self.cache.set(self.get_key(value), 1)
+
+    def set_fuzzy(self, value: str, name: str) -> None:
+        self.cache.set(self.get_key(value, Prefix.FUZZY), clean_value(name))
+
+    def exists(self, value: str) -> bool:
+        return bool(self.cache.exists(self.get_key(value)))
+
+    def get(self, key: str, prefix: str | None = None) -> str | None:
+        value = self.cache.get(self.get_key(key, prefix))
         if value is not None:
-            return value.decode().strip()
+            return value.decode()
 
-    def index(self, value: str) -> int:
-        value = canonize(value)
-        if not value:
-            return 0
-        # store fingerprint
-        fp_value = fp(value)
-        if fp_value:
-            self.cache.set(self.get_key(fp_value), value)
-        # store inverted tokens
-        ix = 1
-        for token in tokenize(value):
-            ix += self.sadd(token, Prefix.TOKEN, value)
-        return ix
+    def index(self, value: str) -> None:
+        """
+        Index a value name:
+        1.) Ensure useful value
+        2.) Set exact match for simple key lookup
+        3.) Add value to normalized lookup SET
+        """
+        key = normalize(value)
+        if not key:
+            return
+        self.set_name(value)
+        self.sadd(key, Prefix.NORM, value)
 
-    def add_schema(self, value: str, schema: str) -> None:
-        value = canonize(value)
-        self.sadd(value, Prefix.SCHEMA, schema)
+    def index_schema(self, value: str, schema: str) -> None:
+        """
+        Store schema for given name.
+        1.) Store direct lookup
+        2.) Add to normalized SET
+        """
+        self.set(value, schema, prefix=Prefix.SCHEMA)
+        self.sadd(normalize(value), Prefix.SCHEMA, schema)
 
-    def fuzzy(
-        self, value: str, threshold: int | None = settings.FUZZY_SCORE
+    def search(
+        self,
+        value: str,
+        case_sensitive: bool | None = False,
+        threshold: float | None = settings.FUZZY_THRESHOLD,
     ) -> str | None:
-        value = canonize(value)
-        res = self.get(fp(value))
-        if res is not None:
-            return res
-        for token in tokenize(value):
-            match = find_best(
-                value, self.smembers(token, Prefix.TOKEN), threshold=threshold
-            )
-            if match:
-                return match
+        """
+        Test a given value against the index.
+        1.) Try exact match
+        2.) Try fuzzy match
+        3.) Find best fuzzy match by normalized lookup
+        """
+        value = clean_value(value)
+        if self.exists(value):
+            return value
+        fuzzy_result = self.get(value, prefix=Prefix.FUZZY)
+        if fuzzy_result and fuzz.ratio(fuzzy_result, value) >= threshold * 100:
+            return fuzzy_result
+        match = find_best(
+            value,
+            self.smembers(normalize(value), Prefix.NORM),
+            case_sensitive=case_sensitive,
+            threshold=threshold,
+        )
+        if match:
+            # set shortcut if default threshold:
+            if threshold >= settings.FUZZY_THRESHOLD:
+                self.set(value, match, Prefix.FUZZY)
+            return match
 
     def smembers(self, key: str, prefix: str) -> Set[str]:
-        key = f"{self.get_key(key)}:{prefix}"
-        res: Set[bytes] = self.cache.smembers(key)
-        return {v.decode() for v in res}
+        key = self.get_key(key, prefix) + b"#SET"
+        return {v.decode() for v in self.cache.smembers(key)}
 
     def sadd(self, key: str, prefix: str, *values: str) -> int:
-        key = f"{self.get_key(key)}:{prefix}"
-        return self.cache.sadd(key, *values)
+        key = self.get_key(key, prefix) + b"#SET"
+        return self.cache.sadd(key, *(clean_value(v) for v in values))
 
     @staticmethod
-    def get_key(key: str) -> str:
-        return f"{settings.REDIS_PREFIX}:{normalize(key)}"
+    def get_key(key: str, prefix: str | None = None) -> bytes:
+        key = clean_value(key)
+        if prefix:
+            return f"{settings.REDIS_PREFIX}:{key}:{prefix}".encode()
+        return f"{settings.REDIS_PREFIX}:{key}".encode()
 
 
 @cache

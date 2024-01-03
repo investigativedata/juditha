@@ -5,7 +5,7 @@ import typer
 from rich import print
 
 from juditha import io
-from juditha.store import lookup
+from juditha.store import classify, lookup
 
 logging.basicConfig(level=logging.INFO)
 
@@ -30,19 +30,37 @@ def cli_import(
 
 
 @cli.command()
-def load_dataset(uri: str) -> int:
-    success(io.load_dataset(uri))
+def load_dataset(
+    uri: str,
+    with_schema: Annotated[
+        bool, typer.Option(..., help="Include schemata for classifier")
+    ] = False,
+) -> int:
+    success(io.load_dataset(uri, with_schema=with_schema))
 
 
 @cli.command()
-def load_catalog(uri: str) -> int:
-    success(io.load_catalog(uri))
+def load_catalog(
+    uri: str,
+    with_schema: Annotated[
+        bool, typer.Option(..., help="Include schemata for classifier")
+    ] = False,
+) -> int:
+    success(io.load_catalog(uri, with_schema=with_schema))
 
 
-# @cli.callback(invoke_without_command=True)
 @cli.command("lookup")
 def cli_lookup(value: str):
     result = lookup(value)
+    if result is not None:
+        print(result)
+    else:
+        print("[red]not found[/red]")
+
+
+@cli.command("classify")
+def cli_classify(value: str):
+    result = classify(value)
     if result is not None:
         print(result)
     else:

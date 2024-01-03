@@ -4,7 +4,8 @@ from typing import Generator, Set
 from ftmq.enums import Schemata as _Schemata
 from ftmq.types import CE
 
-from juditha.util import canonized_names
+from juditha.clean import normalize
+from juditha.util import proxy_names
 
 
 class Schemata(StrEnum):
@@ -32,8 +33,9 @@ class Schema:
     def from_proxy(proxy: CE) -> Generator[tuple[str, str], None, None]:
         schema = proxy.schema.name
         if schema in Schemata._member_names_:
-            for name in canonized_names(proxy):
-                yield name, schema
+            for name in set(normalize(n) for n in proxy_names(proxy)):
+                if name:
+                    yield name, schema
 
     @classmethod
     def resolve(cls, schemata: Set[str]) -> str | None:

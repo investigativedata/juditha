@@ -22,16 +22,16 @@ async def api_classify(q: str) -> str:
 
 
 @app.get("/{q}")
-async def api_lookup(q: str, fuzzy: bool | None = False) -> str:
-    name = lookup(q, fuzzy=fuzzy)
+async def api_lookup(q: str, threshold: float | None = settings.FUZZY_THRESHOLD) -> str:
+    name = lookup(q, threshold=threshold)
     if name is None:
         return Response("404", status_code=404)
     return Response(name)
 
 
 @app.head("/{q}")
-async def api_head(q: str, fuzzy: bool | None = False) -> None:
-    name = lookup(q, fuzzy=fuzzy)
+async def api_head(q: str, threshold: float | None = settings.FUZZY_THRESHOLD) -> None:
+    name = lookup(q, threshold=threshold)
     if name is None:
         raise HTTPException(404)
     return 200

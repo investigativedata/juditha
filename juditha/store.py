@@ -6,9 +6,10 @@ from pydantic import BaseModel
 
 from juditha.cache import Cache, Prefix, get_cache
 from juditha.classify import Schema
-from juditha.settings import FUZZY, JUDITHA, JUDITHA_CONFIG
+from juditha.clean import normalize
+from juditha.settings import FUZZY_THRESHOLD, JUDITHA, JUDITHA_CONFIG
 from juditha.source import Source
-from juditha.util import canonized_names
+from juditha.util import proxy_names
 
 
 class Store(BaseModel, YamlMixin):
@@ -22,31 +23,33 @@ class Store(BaseModel, YamlMixin):
         super().__init__(**data)
         self.cache = get_cache()
 
-    def lookup(self, value: str, fuzzy: bool | None = FUZZY) -> str | None:
-        res = self.cache.get(value)
+    def lookup(
+        self, value: str, threshold: float | None = FUZZY_THRESHOLD
+    ) -> str | None:
+        res = self.cache.search(value, threshold=threshold)
         if res is not None:
             return res
         for source in self.sources:
             res = source.lookup(value)
             if res is not None:
-                return self.cache.set(value)
-        if fuzzy:
-            return self.cache.fuzzy(value)
+                self.cache.set_fuzzy(res, value)
+                return res
 
     def classify(self, name: str) -> str | None:
-        schemata = self.cache.smembers(name, Prefix.SCHEMA)
+        schemata = self.cache.smembers(normalize(name), Prefix.SCHEMA)
         return Schema.resolve(schemata)
 
-    def add(self, value: str, fuzzy: bool | None = FUZZY) -> None:
-        self.cache.set(value)
-        if fuzzy:
-            self.cache.index(value)
+    def index(self, value: str) -> None:
+        self.cache.index(value)
 
-    def add_proxy(self, proxy: CE, fuzzy: bool | None = FUZZY) -> None:
-        for name in canonized_names(proxy):
-            self.add(name, fuzzy=fuzzy)
-        for name, schema in Schema.from_proxy(proxy):
-            self.cache.add_schema(name, schema)
+    def index_proxy(self, proxy: CE, with_schema: bool | None = False) -> None:
+        if not proxy.schema.is_a("LegalEntity"):
+            return
+        for name in proxy_names(proxy):
+            self.index(name)
+        if with_schema:
+            for name, schema in Schema.from_proxy(proxy):
+                self.cache.index_schema(name, schema)
 
 
 @cache
@@ -61,9 +64,9 @@ def get_store(uri: str | None = None, juditha_url: str | None = None) -> Store:
 
 
 @lru_cache(100_000)
-def lookup(value: str, fuzzy: bool | None = FUZZY) -> str | None:
+def lookup(value: str, threshold: float | None = FUZZY_THRESHOLD) -> str | None:
     store = get_store()
-    return store.lookup(value, fuzzy=fuzzy)
+    return store.lookup(value, threshold=threshold)
 
 
 @lru_cache(100_000)
