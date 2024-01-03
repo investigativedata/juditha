@@ -10,16 +10,17 @@ readme = "README.md"
 juditha = "juditha.cli:cli"
 
 [tool.poetry.dependencies]
-python = ">3.10,<3.12"
-ftmq = "^0.3.3"
-fastapi = "^0.103.2"
+python = ">3.11,<3.12"
+ftmq = "^0.5.1"
+fastapi = "^0.108.0"
 redis = "^5.0.1"
-fakeredis = "^2.19.0"
+fakeredis = "^2.20.1"
 typer = "^0.9.0"
-rich = "^13.6.0"
-uvicorn = "^0.23.2"
+rich = "^13.7.0"
+uvicorn = "^0.25.0"
 alephclient = "^2.3.6"
 requests = "^2.31.0"
+thefuzz = "^0.20.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.9.1"
