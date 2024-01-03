@@ -4,29 +4,39 @@ from typing import Annotated
 import typer
 from rich import print
 
-from juditha import io
+from juditha import io, settings
 from juditha.store import classify, lookup
 
 logging.basicConfig(level=logging.INFO)
 
-cli = typer.Typer()
+cli = typer.Typer(pretty_exceptions_enable=settings.DEBUG)
 
 
-def success(ix: int) -> None:
-    print(f"[green]Imported {ix} names")
+def success(msg: str) -> None:
+    print(f"[green]{msg}")
 
 
-@cli.command("import")
-def cli_import(
+def error(e: Exception) -> None:
+    if not settings.DEBUG:
+        return print(f"[red]{e}")
+    raise e
+
+
+@cli.command()
+def load(
     uri: Annotated[str, typer.Option("-i", help="Input uri, default stdin")] = "-",
     from_entities: Annotated[
         bool, typer.Option(help="Specify if import data is ftm data (json lines)")
     ] = False,
 ):
-    if from_entities:
-        success(io.load_proxies(uri))
-    else:
-        success(io.load_names(uri))
+    try:
+        if from_entities:
+            res = io.load_proxies(uri)
+        else:
+            res = io.load_names(uri)
+        success(f"Imported {res} names.")
+    except Exception as e:
+        error(e)
 
 
 @cli.command()
@@ -36,7 +46,11 @@ def load_dataset(
         bool, typer.Option(..., help="Include schemata for classifier")
     ] = False,
 ) -> int:
-    success(io.load_dataset(uri, with_schema=with_schema))
+    try:
+        res = io.load_dataset(uri, with_schema=with_schema)
+        success(f"Imported {res} names.")
+    except Exception as e:
+        error(e)
 
 
 @cli.command()
@@ -46,22 +60,32 @@ def load_catalog(
         bool, typer.Option(..., help="Include schemata for classifier")
     ] = False,
 ) -> int:
-    success(io.load_catalog(uri, with_schema=with_schema))
+    try:
+        res = io.load_catalog(uri, with_schema=with_schema)
+        success(f"Imported {res} names.")
+    except Exception as e:
+        error(e)
 
 
 @cli.command("lookup")
 def cli_lookup(value: str):
-    result = lookup(value)
-    if result is not None:
-        print(result)
-    else:
-        print("[red]not found[/red]")
+    try:
+        result = lookup(value)
+        if result is not None:
+            print(result)
+        else:
+            print("[red]not found[/red]")
+    except Exception as e:
+        error(e)
 
 
 @cli.command("classify")
 def cli_classify(value: str):
-    result = classify(value)
-    if result is not None:
-        print(result)
-    else:
-        print("[red]not found[/red]")
+    try:
+        result = classify(value)
+        if result is not None:
+            print(result)
+        else:
+            print("[red]not found[/red]")
+    except Exception as e:
+        error(e)
