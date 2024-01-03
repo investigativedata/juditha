@@ -68,8 +68,11 @@ class Cache:
         1.) Store direct lookup
         2.) Add to normalized SET
         """
+        key = normalize(value)
+        if not key:
+            return
         self.set(value, schema, prefix=Prefix.SCHEMA)
-        self.sadd(normalize(value), Prefix.SCHEMA, schema)
+        self.sadd(key, Prefix.SCHEMA, schema)
 
     def search(
         self,
