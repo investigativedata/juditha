@@ -4,7 +4,8 @@ from alephclient.api import AlephAPI
 from ftmq.util import make_proxy
 from pydantic import BaseModel
 
-from juditha.util import test_proxy
+from juditha.settings import FUZZY_THRESHOLD
+from juditha.util import find_best, proxy_names
 
 if TYPE_CHECKING:
     from juditha.source import Source
@@ -22,12 +23,15 @@ class Aleph(BaseModel):
         data["api"] = AlephAPI(data.get("host"), data.get("api_key"))
         super().__init__(**data)
 
-    def lookup(self, value: str) -> str | None:
+    def lookup(
+        self, value: str, threshold: float | None = FUZZY_THRESHOLD
+    ) -> str | None:
         for result in self.api.search(value):
             proxy = make_proxy(result)
-            name = test_proxy(proxy, value)
-            if name is not None:
-                return name
+            names = {s for s in proxy_names(proxy)}
+            match = find_best(value, names, threshold=threshold)
+            if match:
+                return match
 
     @staticmethod
     def from_source(source: "Source") -> "Aleph":

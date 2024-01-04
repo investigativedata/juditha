@@ -14,8 +14,7 @@ REDIS_PREFIX = get_env("REDIS_PREFIX", "juditha")
 
 JUDITHA_CONFIG = get_env("JUDITHA_CONFIG")
 JUDITHA = get_env("JUDITHA")
-FUZZY = as_bool(get_env("FUZZY", 0))
-FUZZY_SCORE = float(get_env("FUZZY_SCORE", 0.94))
+FUZZY_THRESHOLD = float(get_env("FUZZY_THRESHOLD", 0.97))
 
 # Api documentation render
 TITLE = os.environ.get("TITLE", "Juditha")
@@ -24,10 +23,11 @@ CONTACT = {
     "url": os.environ.get(
         "CONTACT_URL", "https://github.com/investigativedata/juditha/"
     ),
-    "email": os.environ.get("CONTACT_EMAIL", "simon@investigativedata.org"),
+    "email": os.environ.get("CONTACT_EMAIL", "hi@investigativedata.org"),
 }
 DESCRIPTION = """
-Super fast canonical name lookup. Just do head requests:
+Super fast canonical name lookup. Just do head requests to check if a name is
+known:
 
     curl -I "http://localhost:8000/Berlin"
     HTTP/1.1 200 OK

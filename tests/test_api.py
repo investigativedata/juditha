@@ -5,7 +5,7 @@ from juditha.io import load_proxies
 
 
 def test_api(fixtures_path):
-    load_proxies(fixtures_path / "eu_authorities.ftm.json")
+    load_proxies(fixtures_path / "eu_authorities.ftm.json", with_schema=True)
 
     client = TestClient(app)
 
@@ -13,7 +13,7 @@ def test_api(fixtures_path):
     assert res.status_code == 200
 
     res = client.get("/european Parliament")
-    assert res.content.decode() == "european parliament"
+    assert res.content.decode() == "European Parliament"
 
     res = client.head("/shdfjkoshfaj")
     assert res.status_code == 404
@@ -23,5 +23,6 @@ def test_api(fixtures_path):
     res = client.get("/European parlament")
     assert res.status_code == 404
 
-    res = client.get("/European parlament?fuzzy=true")
+    res = client.get("/_classify/European parliament")
     assert res.status_code == 200
+    assert res.content.decode() == "PublicBody"
