@@ -30,11 +30,12 @@ def test_normalize():
     assert normalize("عبد الحميد دشتي") == "alhmydbdshty"
     assert normalize("ヴラジーミル・プーチン") == "puchinvurajimiru"
 
-    # clean value: only clean whitespace
+    # clean value: only clean non alphanumeric
     assert clean_value("Foo  Bar") == "Foo Bar"
-    assert clean_value(" Foo  Bar") == "Foo Bar"
+    assert clean_value(" Foo,  Bar") == "Foo Bar"
     value = """
     Foo
     Bar
     """
     assert clean_value(value) == "Foo Bar"
+    assert clean_value("Foo, 10. Bar") == "Foo 10 Bar"

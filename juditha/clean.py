@@ -1,3 +1,4 @@
+import re
 from itertools import groupby
 from string import digits
 from typing import Any
@@ -46,4 +47,4 @@ def normalize(value: Any) -> str | None:
 def clean_value(value: str | bytes) -> str:
     if isinstance(value, bytes):
         value = value.decode()
-    return " ".join(value.split()).strip()
+    return " ".join(re.split(r"\W+", value)).strip()
