@@ -15,9 +15,10 @@ log = logging.getLogger(__name__)
 
 
 class Prefix(StrEnum):
-    SCHEMA = "SCHEMA"
-    NORM = "NORM"
-    FUZZY = "FUZZY"
+    SCHEMA = "S"
+    NORM = "N"
+    FUZZY = "F"
+    TOKEN = "T"
 
 
 class Cache:
@@ -30,7 +31,7 @@ class Cache:
             con = redis.from_url(settings.REDIS_URL)
             con.ping()
             log.info(f"Redis connected: `{settings.REDIS_URL}`")
-        self.cache = con
+        self.cache: redis.Redis = con
 
     def set(self, key: str, value: str, prefix: str | None = None) -> None:
         self.cache.set(self.get_key(key, prefix), clean_value(value))
@@ -55,12 +56,16 @@ class Cache:
         1.) Ensure useful value
         2.) Set exact match for simple key lookup
         3.) Add value to normalized lookup SET
+        4.) Add key to token inverted lookup index
         """
-        key = normalize(value)
+        key = normalize(value, remove_whitespace=False)
         if not key:
             return
         self.set_name(value)
-        self.sadd(key, Prefix.NORM, value)
+        self.sadd(key.replace(" ", ""), Prefix.NORM, value)
+        for token in key.split():
+            if len(token) > 3:
+                self.sadd(token, Prefix.TOKEN, key.replace(" ", ""))
 
     def index_schema(self, value: str, schema: str) -> None:
         """

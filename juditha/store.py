@@ -1,4 +1,5 @@
 from functools import cache, lru_cache
+from typing import Generator
 
 from ftmq.model.mixins import YamlMixin
 from ftmq.types import CE
@@ -7,6 +8,7 @@ from pydantic import BaseModel
 from juditha.cache import Cache, Prefix, get_cache
 from juditha.classify import Schema
 from juditha.clean import normalize
+from juditha.scan import get_token_keys, search_candidates
 from juditha.settings import FUZZY_THRESHOLD, JUDITHA, JUDITHA_CONFIG
 from juditha.source import Source
 from juditha.util import proxy_names
@@ -50,6 +52,17 @@ class Store(BaseModel, YamlMixin):
         if with_schema:
             for name, schema in Schema.from_proxy(proxy):
                 self.cache.index_schema(name, schema)
+
+    def scan_text(
+        self,
+        txt: str,
+        case_sensitive: bool | None = False,
+        threshold: float | None = FUZZY_THRESHOLD,
+    ) -> Generator[str, None, None]:
+        for token_key in get_token_keys(txt):
+            for key in self.cache.smembers(token_key, Prefix.TOKEN):
+                candidates = self.cache.smembers(key, Prefix.NORM)
+                yield from search_candidates(candidates, txt, case_sensitive, threshold)
 
 
 @cache

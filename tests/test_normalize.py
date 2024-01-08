@@ -8,6 +8,12 @@ def test_normalize():
     # fingerprints, no whitespace
     assert normalize(" Siemens, Aktiengesellschaft") == "agsiemens"
 
+    # fingerprints, keep whitespace
+    assert (
+        normalize(" Siemens, Aktiengesellschaft", remove_whitespace=False)
+        == "ag siemens"
+    )
+
     # no digits
     assert normalize("Jane 123") == "jane"
 
@@ -27,15 +33,15 @@ def test_normalize():
 
     # ascii
     assert normalize("éé") == "e"
-    assert normalize("عبد الحميد دشتي") == "alhmydbdshty"
+    assert normalize("عبد الحميد دشتي") == "alhmydbddshty"
     assert normalize("ヴラジーミル・プーチン") == "puchinvurajimiru"
 
-    # clean value: only clean non alphanumeric
+    # clean value: only clean whitespace
     assert clean_value("Foo  Bar") == "Foo Bar"
-    assert clean_value(" Foo,  Bar") == "Foo Bar"
+    assert clean_value(" Foo,  Bar") == "Foo, Bar"
     value = """
     Foo
     Bar
     """
     assert clean_value(value) == "Foo Bar"
-    assert clean_value("Foo, 10. Bar") == "Foo 10 Bar"
+    assert clean_value("Foo, 10. Bar") == "Foo, 10. Bar"

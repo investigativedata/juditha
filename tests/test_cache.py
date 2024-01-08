@@ -1,4 +1,4 @@
-from juditha.cache import Cache
+from juditha.cache import Cache, Prefix
 from juditha.util import proxy_names
 
 
@@ -12,14 +12,19 @@ def test_cache(eu_authorities):
     assert not cache.exists("foo")
     assert cache.exists("European Parliament")
     assert cache.get("European Parliament") == "1"
+
+    # cache is populated with fuzzy values after sucessful lookup
     assert not cache.exists("european parliament")
+    assert cache.get("european parliament", Prefix.FUZZY) is None
     assert cache.search("european parliament") == "European Parliament"
-    assert cache.get("european parliament:FUZZY") == "European Parliament"
+    # now it is there:
+    assert cache.get("european parliament", Prefix.FUZZY) == "European Parliament"
     assert cache.search("european parliament") == "European Parliament"
 
     # fingerprinting fuzziness threshold
     assert cache.search("parliament european") is None
     assert cache.search("parliament european", threshold=0.5) == "European Parliament"
 
+    # not a real name
     cache.index("-")
     assert not cache.exists("-")

@@ -21,6 +21,8 @@ uvicorn = "^0.25.0"
 alephclient = "^2.3.6"
 requests = "^2.31.0"
 thefuzz = "^0.20.0"
+fuzzysearch = "^0.7.3"
+nltk = "^3.8.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.9.1"
