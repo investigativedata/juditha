@@ -1,30 +1,54 @@
+import pytest
+
 from juditha.cache import Cache, Prefix
-from juditha.util import proxy_names
+from juditha.clean import normalize, tokenize
 
 
 def test_cache(eu_authorities):
     cache = Cache()
     for proxy in eu_authorities:
-        for value in proxy_names(proxy):
-            cache.index(value)
-            cache.index_schema(value, proxy.schema.name)
+        cache.index_proxy(proxy, with_schema=True)
 
     assert not cache.exists("foo")
     assert cache.exists("European Parliament")
     assert cache.get("European Parliament") == "1"
 
-    # cache is populated with fuzzy values after sucessful lookup
-    assert not cache.exists("european parliament")
-    assert cache.get("european parliament", Prefix.FUZZY) is None
-    assert cache.search("european parliament") == "European Parliament"
-    # now it is there:
-    assert cache.get("european parliament", Prefix.FUZZY) == "European Parliament"
-    assert cache.search("european parliament") == "European Parliament"
+    # normalized token
+    key = normalize("European Parliament").replace(" ", "")
+    assert cache.exists(key, Prefix.NORM)
 
-    # fingerprinting fuzziness threshold
-    assert cache.search("parliament european") is None
-    assert cache.search("parliament european", threshold=0.5) == "European Parliament"
+    tested = False
+    for token in tokenize("European Parliament"):
+        assert cache.exists(token, Prefix.METAPHONE)
+        assert key in cache.smembers(token, Prefix.METAPHONE)
+        tested = True
+    assert tested
 
-    # not a real name
+    # fuzzy lookup
+    assert cache.lookup("European Parliament").name == "European Parliament"
+    assert (
+        cache.lookup("european parliament", threshold=0.5).name == "European Parliament"
+    )
+    assert (
+        cache.lookup("europen parlament", threshold=0.5).name == "European Parliament"
+    )
+
+    # invalid names
     cache.index("-")
     assert not cache.exists("-")
+    with pytest.raises(ValueError):
+        assert not cache.exists(None)
+    with pytest.raises(ValueError):
+        assert not cache.exists("")
+
+
+def test_cache_extract():
+    cache = Cache()
+    cache.index("Juditha Dommer")
+    cache.index("Johann Pachelbel")
+    txt = "Ten months later, J. Pachelbel married Judith M. Drommer (Trummert), daughter of a coppersmith."
+    res = list(cache.extract(txt, threshold=0.5))
+    assert len(res) == 2
+    assert res[0].score > res[1].score
+    assert res[0].name == "Juditha Dommer"
+    assert res[0].original == "Judith M. Drommer"

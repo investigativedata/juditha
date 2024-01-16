@@ -12,7 +12,7 @@ def test_api(fixtures_path):
     res = client.head("/European parliament")
     assert res.status_code == 200
 
-    res = client.get("/european Parliament")
+    res = client.get("/European parliament?threshold=0.8")
     assert res.content.decode() == "European Parliament"
 
     res = client.head("/shdfjkoshfaj")
@@ -20,8 +20,12 @@ def test_api(fixtures_path):
     res = client.get("/dshjka")
     assert res.status_code == 404
 
-    res = client.get("/European parlament")
-    assert res.status_code == 404
+    res = client.get("/European parlament?threshold=0.8&format=json")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["name"] == "European Parliament"
+    assert data["original"] == "European parlament"
+    assert data["score"] < 1
 
     res = client.get("/_classify/European parliament")
     assert res.status_code == 200

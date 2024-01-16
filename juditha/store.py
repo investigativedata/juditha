@@ -1,85 +1,60 @@
 from functools import cache, lru_cache
-from typing import Generator
+from typing import Iterable
 
-from ftmq.model.mixins import YamlMixin
 from ftmq.types import CE
-from pydantic import BaseModel
 
-from juditha.cache import Cache, Prefix, get_cache
+from juditha import settings
+from juditha.cache import Prefix, get_cache
 from juditha.classify import Schema
 from juditha.clean import normalize
-from juditha.scan import get_token_keys, search_candidates
-from juditha.settings import FUZZY_THRESHOLD, JUDITHA, JUDITHA_CONFIG
-from juditha.source import Source
-from juditha.util import proxy_names
+from juditha.match import Match
 
 
-class Store(BaseModel, YamlMixin):
-    sources: list[Source] = []
-    cache: Cache | None = None
-
-    class Config:
-        arbitrary_types_allowed = True
-
-    def __init__(self, **data):
-        super().__init__(**data)
-        self.cache = get_cache()
-
-    def lookup(
-        self, value: str, threshold: float | None = FUZZY_THRESHOLD
-    ) -> str | None:
-        res = self.cache.search(value, threshold=threshold)
-        if res is not None:
-            return res
-        for source in self.sources:
-            res = source.lookup(value)
-            if res is not None:
-                self.cache.set_fuzzy(res, value)
-                return res
+class Store:
+    def __init__(self, redis_url: str | None = None):
+        self.cache = get_cache(redis_url)
+        self.index = self.cache.index
+        self.index_proxy = self.cache.index_proxy
+        self.lookup = self.cache.lookup
+        self.extract = self.cache.extract
 
     def classify(self, name: str) -> str | None:
         schemata = self.cache.smembers(normalize(name), Prefix.SCHEMA)
         return Schema.resolve(schemata)
 
-    def index(self, value: str) -> None:
-        self.cache.index(value)
-
-    def index_proxy(self, proxy: CE, with_schema: bool | None = False) -> None:
-        if not proxy.schema.is_a("LegalEntity"):
-            return
-        for name in proxy_names(proxy):
-            self.index(name)
-        if with_schema:
-            for name, schema in Schema.from_proxy(proxy):
-                self.cache.index_schema(name, schema)
-
-    def scan_text(
+    def load_proxies(
         self,
-        txt: str,
-        case_sensitive: bool | None = False,
-        threshold: float | None = FUZZY_THRESHOLD,
-    ) -> Generator[str, None, None]:
-        for token_key in get_token_keys(txt):
-            for key in self.cache.smembers(token_key, Prefix.TOKEN):
-                candidates = self.cache.smembers(key, Prefix.NORM)
-                yield from search_candidates(candidates, txt, case_sensitive, threshold)
+        proxies: Iterable[CE],
+        schema: str | None = "LegalEntity",
+        with_schema: bool | None = False,
+    ) -> int:
+        ix = 0
+        for proxy in proxies:
+            self.cache.index_proxy(proxy, schema=schema, with_schema=with_schema)
+            ix += 1
+        return ix
+
+    def load_names(self, names: Iterable[str]) -> int:
+        ix = 0
+        for name in names:
+            self.cache.index(name)
+            ix += 1
+        return ix
 
 
 @cache
-def get_store(uri: str | None = None, juditha_url: str | None = None) -> Store:
-    uri = uri or JUDITHA_CONFIG
-    if uri:
-        return Store.from_path(uri)
-    url = juditha_url or JUDITHA
-    if url:
-        return Store(sources=[Source(klass="juditha", config={"url": url})])
-    return Store()
+def get_store(redis_url: str | None = None) -> Store:
+    return Store(redis_url)
 
 
 @lru_cache(100_000)
-def lookup(value: str, threshold: float | None = FUZZY_THRESHOLD) -> str | None:
+def lookup(
+    value: str,
+    threshold: float | None = settings.FUZZY_THRESHOLD,
+    case_sensitive: bool | None = True,
+) -> Match | None:
     store = get_store()
-    return store.lookup(value, threshold=threshold)
+    return store.lookup(value, threshold=threshold, case_sensitive=case_sensitive)
 
 
 @lru_cache(100_000)

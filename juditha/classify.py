@@ -1,11 +1,7 @@
 from enum import StrEnum
-from typing import Generator, Set
+from typing import Set
 
 from ftmq.enums import Schemata as _Schemata
-from ftmq.types import CE
-
-from juditha.clean import normalize
-from juditha.util import proxy_names
 
 
 class Schemata(StrEnum):
@@ -28,14 +24,6 @@ class Schema:
         if schema == _Schemata.Person:
             return "PERSON"
         return "ORG"
-
-    @staticmethod
-    def from_proxy(proxy: CE) -> Generator[tuple[str, str], None, None]:
-        schema = proxy.schema.name
-        if schema in Schemata._member_names_:
-            for name in set(normalize(n) for n in proxy_names(proxy)):
-                if name:
-                    yield name, schema
 
     @classmethod
     def resolve(cls, schemata: Set[str]) -> str | None:

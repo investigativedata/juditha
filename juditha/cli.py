@@ -77,7 +77,7 @@ def cli_lookup(
     try:
         result = lookup(value, threshold=threshold)
         if result is not None:
-            print(result)
+            print(result.name)
         else:
             print("[red]not found[/red]")
     except Exception as e:
