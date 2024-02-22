@@ -34,7 +34,7 @@ bump2version = "^1.0.1"
 pytest = "^7.4.2"
 pytest-coverage = "^0.0"
 pytest-env = "^1.0.1"
-httpx = "^0.25.0"
+httpx = ">=0.25,<0.28"
 mypy = "^1.5.1"
 
 [build-system]
